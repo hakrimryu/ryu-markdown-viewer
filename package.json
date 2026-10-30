@@ -14,11 +14,12 @@
     "test:app": "node scripts/smoke.mjs",
     "test:settings": "node scripts/settings-smoke.mjs",
     "test:editing": "node scripts/editing-smoke.mjs",
-    "dist": "npm run build && electron-builder --win portable --x64"
+    "dist": "npm run build && electron-builder --win --x64"
   },
   "build": {
     "appId": "com.markdesk.app",
     "productName": "Ryu Markdown Viewer",
+    "artifactName": "Ryu-Markdown-Viewer-${version}-Windows-${arch}-ZIP.${ext}",
     "directories": {
       "output": "release"
     },
@@ -29,13 +30,16 @@
       "assets/**/*",
       "package.json"
     ],
+    "extraFiles": [
+      { "from": "LICENSE", "to": "LICENSE.txt" }
+    ],
     "win": {
-      "target": "portable",
+      "target": ["portable", "zip"],
       "signAndEditExecutable": true,
       "icon": "build/icon.ico"
     },
     "portable": {
-      "artifactName": "Ryu-Markdown-Viewer-${version}-Windows.exe"
+      "artifactName": "Ryu-Markdown-Viewer-${version}-Windows-${arch}-Portable.exe"
     }
   },
   "devDependencies": {

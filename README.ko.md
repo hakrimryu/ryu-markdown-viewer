@@ -45,6 +45,11 @@
 
 이 저장소의 **Releases**에서 Windows x64 배포본을 내려받으세요. 포터블 EXE는 설치 없이 실행합니다. ZIP 배포본을 사용한다면 압축을 모두 푼 뒤 폴더 안의 `Ryu Markdown Viewer.exe`를 실행하세요.
 
+| 다운로드 (v1.0.0 · Windows x64) | 실행 방법 |
+| --- | --- |
+| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-Portable.exe) | EXE 파일 하나로 실행합니다. 설치는 필요 없습니다. |
+| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-ZIP.zip) | 압축을 모두 푼 뒤 `Ryu Markdown Viewer.exe`를 실행합니다. |
+
 1. 앱을 실행한 뒤 왼쪽 아래 **Add folder**를 눌러 문서 폴더를 등록합니다. 기본 화면은 영어입니다.
 2. 왼쪽 목록에서 문서를 선택합니다. 다른 경로에 있는 폴더도 추가할 수 있습니다.
 3. **편집**을 눌러 내용을 수정하고 `Ctrl+S`로 저장하세요. 편집창에서 `/`를 입력하면 Markdown 명령어를 선택할 수 있습니다.
@@ -91,7 +96,7 @@ npm run build
 npm start
 ```
 
-배포용 포터블 EXE는 다음 명령으로 만듭니다. 결과 파일은 `release/`에 생깁니다.
+배포용 Portable EXE와 ZIP은 다음 명령으로 만듭니다. 결과 파일은 `release/`에 생깁니다.
 
 ```powershell
 npm run dist

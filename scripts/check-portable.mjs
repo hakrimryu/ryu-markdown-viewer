@@ -15,7 +15,7 @@ const port = server.address().port;
 await new Promise((resolve) => server.close(resolve));
 const env = { ...process.env, MARKDESK_DATA_DIR: data };
 delete env.ELECTRON_RUN_AS_NODE;
-const launcher = spawn(path.join(cwd, 'release', build.portable.artifactName.replace('${version}', version)), [`--remote-debugging-port=${port}`, path.join(cwd, 'examples', 'README.md')], { cwd, env, windowsHide: true, stdio: 'ignore' });
+const launcher = spawn(path.join(cwd, 'release', build.portable.artifactName.replace('${version}', version).replace('${arch}', 'x64')), [`--remote-debugging-port=${port}`, path.join(cwd, 'examples', 'README.md')], { cwd, env, windowsHide: true, stdio: 'ignore' });
 let launchError;
 launcher.on('error', (error) => { launchError = error; });
 let browser;
