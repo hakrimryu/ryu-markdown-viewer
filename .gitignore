@@ -1,0 +1,42 @@
+# Dependencies and local tool caches
+/node_modules/
+/.vite/
+/.cache/
+*.tsbuildinfo
+
+# Generated app builds and GitHub Release assets (EXE, ZIP, etc.)
+/dist/
+/release/
+
+# Temporary test workspaces, reports, and generated screenshots
+/.test-data/
+/_workspace/
+/artifacts/
+/coverage/
+/playwright-report/
+/test-results/
+
+# Logs
+*.log
+
+# Local environment settings and signing credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pfx
+*.p12
+
+# Personal editor files and OS metadata
+/.idea/
+*.suo
+*.user
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Keep assets/, build/icon.ico, package-lock.json, and licenses in Git:
+# they are inputs needed to build and distribute the app.

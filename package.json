@@ -1,0 +1,55 @@
+{
+  "name": "ryu-markdown-viewer",
+  "version": "1.0.0",
+  "description": "A focused Markdown workspace for Windows",
+  "main": "electron/main.cjs",
+  "author": "HakrimRyu",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "vite build",
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "test:app": "node scripts/smoke.mjs",
+    "test:settings": "node scripts/settings-smoke.mjs",
+    "test:editing": "node scripts/editing-smoke.mjs",
+    "dist": "npm run build && electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "com.markdesk.app",
+    "productName": "Ryu Markdown Viewer",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "LICENSE",
+      "dist/**/*",
+      "electron/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": true,
+      "icon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "Ryu-Markdown-Viewer-${version}-Windows.exe"
+    }
+  },
+  "devDependencies": {
+    "@traptitech/markdown-it-katex": "^3.6.0",
+    "dompurify": "^3.4.17",
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0",
+    "highlight.js": "^11.12.0",
+    "lucide": "^1.65.0",
+    "markdown-it": "^15.0.3",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^12.2.0",
+    "playwright": "^1.64.1",
+    "vite": "^8.3.5"
+  }
+}
