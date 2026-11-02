@@ -37,6 +37,41 @@ async function scanRoot(root) {
   const children = await walk(root);
   return { path: root, name: path.basename(root) || root, children, count, error: unreadable ? { key: 'unreadableFolders', count: unreadable } : null };
 }
+function createWorkspaceIndex(onChange, scan = scanRoot) {
+  const entries = new Map();
+  function start(root, entry) {
+    entry.value = { ...entry.value, loading: true };
+    entry.pending = false;
+    entry.running = true;
+    Promise.resolve().then(() => scan(root)).catch(() => ({ path: root, name: path.basename(root) || root, children: [], count: 0, error: { key: 'unreadableFolders', count: 1 } })).then((value) => {
+      if (entries.get(root) !== entry) return;
+      entry.value = { ...value, loading: false };
+      entry.running = false;
+      if (entry.pending) start(root, entry);
+      onChange();
+    });
+  }
+  function refresh(root) {
+    const entry = entries.get(root);
+    if (!entry) return;
+    if (entry.running) entry.pending = true;
+    else start(root, entry);
+  }
+  return {
+    refresh,
+    snapshot(roots, rescan = false) {
+      for (const root of entries.keys()) if (!roots.includes(root)) entries.delete(root);
+      return roots.map((root) => {
+        if (!entries.has(root)) {
+          const entry = { value: { path: root, name: path.basename(root) || root, children: [], count: 0, error: null } };
+          entries.set(root, entry);
+          start(root, entry);
+        } else if (rescan) refresh(root);
+        return entries.get(root).value;
+      });
+    }
+  };
+}
 const revisionOf = (bytes) => createHash('sha256').update(bytes).digest('hex');
 async function markdownBytes(file, roots) {
   const real = await authorizedPath(file, roots);
@@ -77,4 +112,4 @@ async function createMarkdown(file, roots) {
   catch (error) { if (error.code === 'EEXIST') throw new Error('fileExists'); throw error; }
   return target;
 }
-module.exports = { MARKDOWN, within, authorizedPath, scanRoot, readMarkdown, saveMarkdown, createMarkdown };
+module.exports = { MARKDOWN, within, authorizedPath, scanRoot, createWorkspaceIndex, readMarkdown, saveMarkdown, createMarkdown };

@@ -3,7 +3,56 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { scanRoot, authorizedPath, within, readMarkdown, saveMarkdown, createMarkdown } = require('../electron/workspace.cjs');
+const { scanRoot, createWorkspaceIndex, authorizedPath, within, readMarkdown, saveMarkdown, createMarkdown } = require('../electron/workspace.cjs');
+
+test('folder indexing publishes each result without waiting for slow roots, caches reads, and coalesces refreshes', async () => {
+  const pending = new Map();
+  const calls = [];
+  let changes = 0;
+  const index = createWorkspaceIndex(() => changes++, (root) => {
+    calls.push(root);
+    return new Promise((resolve, reject) => pending.set(root, { resolve, reject }));
+  });
+  const tick = () => new Promise((resolve) => setImmediate(resolve));
+  const slow = path.resolve('slow');
+  const fast = path.resolve('fast');
+  const added = path.resolve('added');
+  const result = (root, count) => ({ path: root, name: path.basename(root), children: [], count, error: null });
+  assert.ok(index.snapshot([slow, fast]).every((root) => root.loading));
+  await tick();
+  pending.get(fast).resolve(result(fast, 6));
+  await tick();
+  let roots = index.snapshot([slow, fast]);
+  assert.equal(roots[0].loading, true);
+  assert.equal(roots[1].count, 6);
+  assert.equal(roots[1].loading, false);
+  assert.equal(changes, 1);
+  index.snapshot([slow, fast, added]);
+  await tick();
+  assert.deepEqual(calls, [slow, fast, added], 'adding a root and reading snapshots do not rescan existing roots');
+  index.refresh(fast);
+  index.refresh(fast);
+  index.refresh(fast);
+  await tick();
+  assert.equal(calls.filter((root) => root === fast).length, 2, 'only one scan per root runs at a time');
+  assert.equal(index.snapshot([slow, fast, added])[1].count, 6, 'refresh keeps the previous tree visible');
+  pending.get(fast).resolve(result(fast, 7));
+  await tick();
+  assert.equal(calls.filter((root) => root === fast).length, 3, 'changes during a scan schedule one follow-up');
+  pending.get(fast).resolve(result(fast, 8));
+  pending.get(added).reject(new Error('unreadable'));
+  await tick();
+  roots = index.snapshot([slow, fast, added]);
+  assert.equal(roots[1].count, 8);
+  assert.equal(roots[1].loading, false);
+  assert.deepEqual(roots[2].error, { key: 'unreadableFolders', count: 1 });
+  index.snapshot([fast, added]);
+  const before = changes;
+  pending.get(slow).resolve(result(slow, 100));
+  await tick();
+  assert.equal(changes, before, 'removed roots cannot publish late results');
+  assert.deepEqual(index.snapshot([fast, added]).map((root) => root.path), [fast, added]);
+});
 
 test('only Markdown files and their parent folders appear, including nested and uppercase names', async (t) => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'markdesk-scan-'));

@@ -40,6 +40,7 @@ const dirty = (file) => { const draft = drafts.get(file); return !!draft && draf
 const directoryOf = (file) => file.replace(/[\\/][^\\/]+$/, '');
 const nameOf = (file) => file === 'welcome' ? t('welcome') : file.split(/[\\/]/).at(-1);
 const currentFiles = () => { const all = []; const visit = (nodes, root) => nodes.forEach((node) => node.children ? visit(node.children, root) : all.push({ ...node, root })); roots.forEach((root) => visit(root.children, root)); return all; };
+const isRegistered = (file) => typeof file === 'string' && roots.some((root) => file.startsWith(root.path + '\\') || file.startsWith(root.path + '/'));
 
 $('#app').innerHTML = `
   <header class="titlebar"><div class="brand"><img src="${appIcon}" alt=""/><span>Ryu Markdown Viewer</span></div><button class="title-search" id="quick-open" data-i18n-title="quickOpen">${icon('search')}<span data-i18n="findFile"></span><kbd>Ctrl P</kbd></button><div class="window-controls"><button data-window="minimize" data-i18n-aria-label="minimize">${icon('minus')}</button><button data-window="maximize" data-i18n-aria-label="maximize">${icon('square')}</button><button data-window="close" class="window-close" data-i18n-aria-label="close">${icon('x')}</button></div></header>
@@ -73,7 +74,7 @@ function renderTree() {
       return `<button class="tree-node ${active === node.path ? 'selected' : ''} ${folder ? 'tree-folder' : ''}" style="--depth:${depth}" data-${folder ? 'folder' : 'file'}="${esc(node.path)}" title="${esc(node.path)}" ${folder ? `aria-expanded="${!!open}"` : ''}>${folder ? icon(open ? 'chevron-down' : 'chevron-right', 'tree-chevron') + icon('folder', 'folder-icon') : '<span class="tree-indent"></span>' + icon('file-text', 'md-icon')}<span>${esc(node.name)}</span></button>${folder && open ? nodes(node.children, depth + 1) : ''}`;
     }).join('');
   }
-  $('#tree').innerHTML = roots.length ? roots.map((root) => `<section class="root-group"><div class="root-row"><button data-root="${esc(root.path)}" aria-expanded="${!collapsedRoots.has(root.path)}" title="${esc(root.path)}">${icon(collapsedRoots.has(root.path) ? 'chevron-right' : 'chevron-down')}${icon('folder', 'root-folder')}<span>${esc(root.name)}</span><small>${root.count}</small></button><button class="create-in-folder" data-create="${esc(root.path)}" title="${t('newFile')}" aria-label="${t('newFile')}">${icon('file-plus')}</button><button class="remove-root" data-remove="${esc(root.path)}" title="${t('removeFolderTitle')}" aria-label="${t('removeFolder')}">${icon('x')}</button></div>${!collapsedRoots.has(root.path) ? `${root.error ? `<div class="tree-notice" role="alert">${esc(t(root.error.key, { count: root.error.count }))}</div>` : ''}${nodes(root.children, 0) || `<div class="tree-notice">${filter ? t('noMatches') : t('noMarkdown')}</div>`}` : ''}</section>`).join('') : `<div class="empty-tree"><strong>${t('noFolders')}</strong><p>${t('addFolderHint')}</p><button id="empty-add">${t('chooseFolder')}</button></div>`;
+  $('#tree').innerHTML = roots.length ? roots.map((root) => `<section class="root-group"><div class="root-row"><button data-root="${esc(root.path)}" aria-expanded="${!collapsedRoots.has(root.path)}" title="${esc(root.path)}">${icon(collapsedRoots.has(root.path) ? 'chevron-right' : 'chevron-down')}${icon('folder', 'root-folder')}<span>${esc(root.name)}</span><small>${root.loading ? '…' : root.count}</small></button><button class="create-in-folder" data-create="${esc(root.path)}" title="${t('newFile')}" aria-label="${t('newFile')}">${icon('file-plus')}</button><button class="remove-root" data-remove="${esc(root.path)}" title="${t('removeFolderTitle')}" aria-label="${t('removeFolder')}">${icon('x')}</button></div>${!collapsedRoots.has(root.path) ? `${root.error ? `<div class="tree-notice" role="alert">${esc(t(root.error.key, { count: root.error.count }))}</div>` : ''}${root.loading ? `<div class="tree-notice" role="status">${t('scanningFolder')}</div>` : ''}${nodes(root.children, 0) || (root.loading ? '' : `<div class="tree-notice">${filter ? t('noMatches') : t('noMarkdown')}</div>`)}` : ''}</section>`).join('') : `<div class="empty-tree"><strong>${t('noFolders')}</strong><p>${t('addFolderHint')}</p><button id="empty-add">${t('chooseFolder')}</button></div>`;
   paintIcons();
 }
 function renderTabs() {
@@ -249,9 +250,9 @@ async function openDocument(file, reset = true) {
 }
 $('#retry-document').onclick = () => attempt(() => openDocument(retryFile));
 $('#dismiss-error').onclick = () => { $('#document-error').hidden = true; setStatus(t('ready')); };
-async function reloadWorkspace(refreshDocument = false) {
+async function reloadWorkspace(refreshDocument = false, rescan = false) {
   if (!api) return;
-  const workspace = await api.workspace(); roots = workspace.roots;
+  const workspace = await api.workspace(rescan); roots = workspace.roots;
   renderTree();
   if (refreshDocument && active !== 'welcome' && !editing && !dirty(active)) await attempt(() => openDocument(active, false));
 }
@@ -290,7 +291,7 @@ async function newFile(directory = active === 'welcome' ? roots[0]?.path : direc
   if (!file) return;
   filter = ''; $('#file-filter').value = '';
   for (const root of roots) collapsedRoots.delete(root.path);
-  await reloadWorkspace();
+  await reloadWorkspace(false, true);
   editing = true;
   await openDocument(file);
   $('#markdown-editor').focus();
@@ -401,8 +402,7 @@ $('#tree').onclick = (event) => attempt(async () => {
     const removed = button.dataset.remove;
     for (const file of tabs) { if (file.startsWith(removed + '\\') || file.startsWith(removed + '/')) { if (!await confirmDraft(file)) return; } }
     const result = await api.removeFolder(removed); roots = result.roots;
-    const keep = new Set(currentFiles().map((file) => file.path));
-    tabs = tabs.filter((file) => file === 'welcome' || keep.has(file));
+    tabs = tabs.filter((file) => file === 'welcome' || isRegistered(file));
     if (!tabs.includes(active)) await openDocument(tabs[0] || 'welcome');
     for (const file of drafts.keys()) if (!tabs.includes(file)) drafts.delete(file);
     for (const file of readingPositions.keys()) if (!tabs.includes(file)) readingPositions.delete(file);
@@ -413,7 +413,7 @@ $('#tabs').onclick = (event) => attempt(async () => { const close = event.target
 $('#tabs').onkeydown = (event) => { const tab = event.target.closest('[data-tab]'); if (!tab) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); attempt(() => openDocument(tab.dataset.tab)); } if (['ArrowLeft', 'ArrowRight'].includes(event.key)) { const next = tabs[(tabs.indexOf(active) + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]; attempt(async () => { await openDocument(next); [...$('#tabs').querySelectorAll('[data-tab]')].find((el) => el.dataset.tab === next)?.focus(); }); } };
 $('#file-filter').oninput = (event) => { filter = event.target.value; renderTree(); };
 $('#add-folder').onclick = $('#add-folder-small').onclick = () => attempt(addFolder);
-$('#refresh').onclick = () => attempt(async () => { await reloadWorkspace(true); toast(t('refreshed')); });
+$('#refresh').onclick = () => attempt(async () => { await reloadWorkspace(true, true); toast(t('scanningFolder')); });
 $('#help-button').onclick = () => attempt(() => openDocument('welcome'));
 const toggleSidebar = () => $('.workbench').classList.toggle('hide-sidebar');
 $('#explorer-activity').onclick = toggleSidebar;
@@ -517,8 +517,7 @@ async function init() {
     setLanguage(session.language);
     document.documentElement.dataset.theme = theme;
     $('#theme-toggle').innerHTML = icon(theme === 'dark' ? 'sun' : 'moon');
-    const files = new Set(currentFiles().map((file) => file.path));
-    tabs = (session.tabs || []).filter((file) => files.has(file));
+    tabs = (session.tabs || []).filter(isRegistered);
     if (!tabs.length) tabs = ['welcome'];
     active = tabs.includes(session.active) ? session.active : tabs[0];
   }

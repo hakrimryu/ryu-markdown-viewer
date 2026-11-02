@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('markdesk', {
-  workspace: () => ipcRenderer.invoke('workspace'),
+  workspace: (rescan = false) => ipcRenderer.invoke('workspace', rescan),
   addFolder: () => ipcRenderer.invoke('add-folder'),
   removeFolder: (path) => ipcRenderer.invoke('remove-folder', path),
   openFile: () => ipcRenderer.invoke('open-file'),

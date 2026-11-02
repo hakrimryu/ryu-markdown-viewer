@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const { watch } = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { MARKDOWN, within, authorizedPath, scanRoot, readMarkdown, saveMarkdown, createMarkdown } = require('./workspace.cjs');
+const { MARKDOWN, within, authorizedPath, createWorkspaceIndex, readMarkdown, saveMarkdown, createMarkdown } = require('./workspace.cjs');
 const messages = require('./locales.json');
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }, { scheme: 'local', privileges: { standard: true, secure: true } }]);
 app.setName('Ryu Markdown Viewer');
@@ -14,6 +14,8 @@ let state = { roots: [], session: {} };
 const ui = (key) => (messages[state.session.language] || messages.en)[key];
 const watchers = new Map();
 let changeTimer;
+const changedRoots = new Set();
+const index = createWorkspaceIndex(() => { if (win && !win.isDestroyed()) win.webContents.send('workspace-changed'); });
 let writeQueue = Promise.resolve();
 let documentQueue = Promise.resolve();
 let allowClose = false;
@@ -31,7 +33,7 @@ function persist() {
   });
   return writeQueue;
 }
-async function workspace() { return { roots: await Promise.all(state.roots.map(scanRoot)), session: state.session }; }
+function workspace(rescan = false) { return { roots: index.snapshot(state.roots, rescan), session: state.session }; }
 function watchRoots() {
   for (const [root, watcher] of watchers) if (!state.roots.includes(root)) { watcher.close(); watchers.delete(root); }
   for (const root of state.roots) {
@@ -39,8 +41,9 @@ function watchRoots() {
     try {
       const watcher = watch(root, { recursive: true }, (_, file) => {
         if (file && file.split(/[\\/]/).some((part) => ['.git', 'node_modules', '.svn', '.hg'].includes(part))) return;
+        changedRoots.add(root);
         clearTimeout(changeTimer);
-        changeTimer = setTimeout(() => { if (win && !win.isDestroyed()) win.webContents.send('workspace-changed'); }, 350);
+        changeTimer = setTimeout(() => { for (const changed of changedRoots) index.refresh(changed); changedRoots.clear(); }, 350);
       });
       watcher.on('error', () => { watcher.close(); watchers.delete(root); });
       watchers.set(root, watcher);
@@ -51,6 +54,7 @@ async function addRoot(folder) {
   const real = await fs.realpath(folder);
   if (!(await fs.stat(real)).isDirectory()) throw new Error('invalidFolder');
   if (!state.roots.includes(real)) state.roots.push(real);
+  index.refresh(real);
   await persist(); watchRoots();
 }
 function handle(channel, fn) {
@@ -61,7 +65,7 @@ function handle(channel, fn) {
   });
 }
 function setupIPC() {
-  handle('workspace', async () => { watchRoots(); return workspace(); });
+  handle('workspace', (rescan) => { watchRoots(); return workspace(rescan === true); });
   handle('add-folder', async () => {
     const result = await dialog.showOpenDialog(win, { title: ui('addFolderDialog'), buttonLabel: ui('addFolder'), properties: ['openDirectory', 'multiSelections'] });
     if (!result.canceled) for (const folder of result.filePaths) await addRoot(folder);
