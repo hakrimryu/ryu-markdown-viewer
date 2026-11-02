@@ -45,10 +45,10 @@ Still, it's already made, and I think it looks pretty. So I'm sharing it.
 
 Download a Windows x64 build from this repository's **Releases** page. The portable EXE runs without an installer. If you use a ZIP build, extract the entire archive, then run `Ryu Markdown Viewer.exe` inside it.
 
-| Download (v1.0.0 · Windows x64) | How to run |
+| Download (v1.0.1 · Windows x64) | How to run |
 | --- | --- |
-| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-Portable.exe) | Run the single EXE; no installer needed. |
-| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-ZIP.zip) | Extract the entire archive, then run `Ryu Markdown Viewer.exe`. |
+| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.1/Ryu-Markdown-Viewer-1.0.1-Windows-x64-Portable.exe) | Run the single EXE; no installer needed. |
+| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.1/Ryu-Markdown-Viewer-1.0.1-Windows-x64-ZIP.zip) | Extract the entire archive, then run `Ryu Markdown Viewer.exe`. |
 
 1. Open the app and click **Add folder** at the bottom left. English is the default language.
 2. Select a document in the explorer. Add more folders as needed, even when they live in different locations.

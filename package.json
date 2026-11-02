@@ -1,6 +1,6 @@
 {
   "name": "ryu-markdown-viewer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A focused Markdown workspace for Windows",
   "main": "electron/main.cjs",
   "author": "HakrimRyu",

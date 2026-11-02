@@ -45,10 +45,10 @@
 
 從本儲存庫的 **Releases** 頁面下載 Windows x64 版本。可攜式 EXE 不需安裝即可執行。如果使用 ZIP 版本，請先完整解壓縮，再執行資料夾內的 `Ryu Markdown Viewer.exe`。
 
-| 下載 (v1.0.0 · Windows x64) | 執行方式 |
+| 下載 (v1.0.1 · Windows x64) | 執行方式 |
 | --- | --- |
-| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-Portable.exe) | 直接執行單一 EXE，不需安裝。 |
-| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-ZIP.zip) | 完整解壓縮後執行 `Ryu Markdown Viewer.exe`。 |
+| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.1/Ryu-Markdown-Viewer-1.0.1-Windows-x64-Portable.exe) | 直接執行單一 EXE，不需安裝。 |
+| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.1/Ryu-Markdown-Viewer-1.0.1-Windows-x64-ZIP.zip) | 完整解壓縮後執行 `Ryu Markdown Viewer.exe`。 |
 
 1. 開啟應用程式，點選左下角的 **Add folder** 新增文件資料夾。預設介面語言為英語。
 2. 從左側清單選擇文件。也可以繼續新增位於其他路徑的資料夾。

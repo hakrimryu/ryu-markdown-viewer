@@ -45,10 +45,10 @@
 
 このリポジトリの **Releases** から Windows x64 版をダウンロードしてください。ポータブル EXE はインストール不要です。ZIP 版を使う場合は、すべてのファイルを展開してから、フォルダー内の `Ryu Markdown Viewer.exe` を起動してください。
 
-| ダウンロード (v1.0.0 · Windows x64) | 起動方法 |
+| ダウンロード (v1.0.1 · Windows x64) | 起動方法 |
 | --- | --- |
-| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-Portable.exe) | EXE ファイルひとつで起動できます。インストールは不要です。 |
-| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.0/Ryu-Markdown-Viewer-1.0.0-Windows-x64-ZIP.zip) | すべて展開してから `Ryu Markdown Viewer.exe` を起動します。 |
+| [Portable (EXE)](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.1/Ryu-Markdown-Viewer-1.0.1-Windows-x64-Portable.exe) | EXE ファイルひとつで起動できます。インストールは不要です。 |
+| [ZIP](https://github.com/hakrimryu/ryu-markdown-viewer/releases/download/v1.0.1/Ryu-Markdown-Viewer-1.0.1-Windows-x64-ZIP.zip) | すべて展開してから `Ryu Markdown Viewer.exe` を起動します。 |
 
 1. アプリを開き、左下の **Add folder** から文書フォルダーを登録します。初期表示は英語です。
 2. 左の一覧から文書を選びます。別の場所にあるフォルダーも追加できます。
